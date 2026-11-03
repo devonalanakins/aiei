@@ -1,6 +1,6 @@
 # AIEI — AI Engineering Integrity & Learning
 
-> **Status:** v0.3.0 standalone, source-only engineering core with bounded read-only GitHub API evidence observation. No GitHub publication, autonomous security certification, production release integration or deployment is implemented.
+> **Status:** v0.3.0 standalone, source-only engineering core with bounded read-only GitHub API evidence observation. Source is published in the dedicated GitHub repository; live GitHub API acceptance, autonomous security certification, production release integration, and deployment are not implemented.
 
 AIEI is a **standalone**, fully open-source, self-hostable-by-default engineering integrity toolkit. It helps engineers retain ownership of AI-assisted work by freezing requirements, recording precise check claims, challenging false evidence, and keeping a human accountable for release decisions.
 
