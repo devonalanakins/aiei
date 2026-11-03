@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "contract_id": "AIEI-DEMO-001",
+  "repository": "example/fictional-app",
+  "change_id": "PR-42",
+  "head_sha": "0123456789abcdef0123456789abcdef01234567",
+  "risk_tier": "R2",
+  "owner": "Example Maintainer",
+  "status": "RELEASE_NO_GO",
+  "release_decision": "NO_GO",
+  "acceptance_criteria": [
+    "An authorized user can save a draft within their own workspace",
+    "A stale draft revision returns a conflict without modifying stored data"
+  ],
+  "negative_cases": [
+    "A different authenticated user cannot read or overwrite another user's draft"
+  ],
+  "checks": [
+    {
+      "name": "Synthetic draft save and concurrency",
+      "result": "pass",
+      "evidence": "synthetic-example://not-an-actual-test-run",
+      "observed_at": "2026-11-03T12:00:00Z",
+      "sha": "0123456789abcdef0123456789abcdef01234567",
+      "kind": "integration",
+      "environment": "synthetic",
+      "synthetic": true,
+      "covers": [
+        "An authorized user can save a draft within their own workspace",
+        "A stale draft revision returns a conflict without modifying stored data"
+      ]
+    },
+    {
+      "name": "Synthetic cross-account rejection",
+      "result": "pass",
+      "evidence": "synthetic-example://not-an-actual-test-run",
+      "observed_at": "2026-11-03T12:00:00Z",
+      "sha": "0123456789abcdef0123456789abcdef01234567",
+      "kind": "security",
+      "environment": "synthetic",
+      "synthetic": true,
+      "covers": [
+        "A different authenticated user cannot read or overwrite another user's draft"
+      ]
+    }
+  ],
+  "open_risks": ["No authentic identity-provider or production database test has been performed"],
+  "approvals": [],
+  "notes": "This is an entirely fabricated teaching fixture; no live system or actual passing test is represented."
+}

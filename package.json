@@ -1,0 +1,29 @@
+{
+  "name": "aiei-engineering-integrity",
+  "version": "0.3.0",
+  "description": "Standalone, offline integrity checker and read-only GitHub evidence inspector",
+  "type": "module",
+  "bin": {
+    "aiei": "./bin/aiei.mjs"
+  },
+  "exports": {
+    ".": "./lib/index.mjs"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check bin/aiei.mjs && node --check lib/index.mjs && node --check lib/validate.mjs && node --check lib/assess.mjs && node --check lib/github-evidence.mjs",
+    "verify:examples": "node --test tests/examples.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "Apache-2.0",
+  "files": [
+    "bin",
+    "lib",
+    "schemas",
+    "docs",
+    "LICENSE",
+    "README.md"
+  ]
+}

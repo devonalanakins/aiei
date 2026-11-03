@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "contract_id": "AIEI-DEMO-001",
+  "organization": "synthetic-lab",
+  "repository": "example/fictional-app",
+  "change_id": "PR-42",
+  "owner": "Example Maintainer",
+  "risk_tier": "R2",
+  "data_classification": "internal",
+  "problem": "Prevent a second signed-in user from changing a draft owned by another account.",
+  "acceptance_criteria": [
+    "An authorized user can save a draft within their own workspace",
+    "A stale draft revision returns a conflict without modifying stored data"
+  ],
+  "negative_cases": [
+    "A different authenticated user cannot read or overwrite another user's draft"
+  ],
+  "invariants": [
+    "Ownership scope is derived from a verified server-side identity, never from request JSON",
+    "A successful write compares the expected revision"
+  ],
+  "non_goals": ["Send email or access real credentials"],
+  "target_environments": ["synthetic", "isolated", "production"],
+  "release_authority": "Example Maintainer",
+  "recovery_plan": "Restore a synthetic database from an independently verified backup and confirm original records."
+}
