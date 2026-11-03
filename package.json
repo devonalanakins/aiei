@@ -1,6 +1,6 @@
 {
   "name": "aiei-engineering-integrity",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Standalone, offline integrity checker and read-only GitHub evidence inspector",
   "type": "module",
   "bin": {

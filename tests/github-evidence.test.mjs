@@ -33,8 +33,8 @@ function matchingReceipt(){
     schema_version:1,repository:REPO,change_id:'PR-31',head_sha:SHA,risk_tier:'R2',owner:'Synthetic Owner',
     status:'VERIFIED',release_decision:'UNDECIDED',
     acceptance_criteria:['It works'],negative_cases:['Wrong principal denied'],open_risks:[],approvals:[],
-    checks:[{name:'CI run',result:'pass',evidence:`https://github.com/${REPO}/actions/runs/202`,sha:SHA,kind:'security',environment:'synthetic',covers:['Wrong principal denied'],observed_at:'2026-11-03T00:00:00Z'},
-      {name:'Check run',result:'pass',evidence:`https://github.com/${REPO}/runs/101`,sha:SHA,kind:'unit',environment:'synthetic',covers:['It works'],observed_at:'2026-11-03T00:00:00Z'}]
+    checks:[{name:'verify',result:'pass',evidence:`https://github.com/${REPO}/actions/runs/202`,sha:SHA,kind:'security',environment:'synthetic',covers:['Wrong principal denied'],observed_at:'2026-11-03T00:00:00Z'},
+      {name:'unit and security',result:'pass',evidence:`https://github.com/${REPO}/runs/101`,sha:SHA,kind:'unit',environment:'synthetic',covers:['It works'],observed_at:'2026-11-03T00:00:00Z'}]
   };
 }
 
@@ -167,4 +167,32 @@ test('a terminal GitHub failure can corroborate an explicitly failing check, but
   assert.equal(s.summary.all_observed_checks_successful,false);
   r.checks[0].result='blocked';
   assert.equal(compareGitHubReceipt(s,r).valid,false);
+});
+
+
+test('a passing lint workflow cannot be relabeled as a security proof',async()=>{
+  const s=await inspect();
+  const receipt=matchingReceipt();
+  receipt.checks[0].name='security penetration test';
+  const result=compareGitHubReceipt(s,receipt);
+  assert.equal(result.valid,false);
+  assert.equal(result.release_authorized,false);
+  assert(result.blockers.some(x=>/name|identity/i.test(x)));
+});
+
+test('a passing GitHub run cannot corroborate two different receipt checks',async()=>{
+  const s=await inspect();
+  const receipt=matchingReceipt();
+  receipt.checks.push({...receipt.checks[0], covers:['Second unrelated claim']});
+  const result=compareGitHubReceipt(s,receipt);
+  assert.equal(result.valid,false);
+  assert.equal(result.release_authorized,false);
+  assert(result.blockers.some(x=>/duplicate|reuse/i.test(x)));
+});
+
+test('check-run names must match canonical observed identity exactly',async()=>{
+  const s=await inspect();
+  const receipt=matchingReceipt();
+  receipt.checks[1].name='Unit and Security';
+  assert.equal(compareGitHubReceipt(s,receipt).valid,false);
 });

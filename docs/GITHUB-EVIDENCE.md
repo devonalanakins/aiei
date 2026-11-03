@@ -1,4 +1,4 @@
-# GitHub evidence inspector — v0.3 (read-only)
+# GitHub evidence inspector — v0.3.1 (read-only)
 
 ## Scope and trust level
 
@@ -14,7 +14,7 @@ node bin/aiei.mjs inspect github example/open-source-repo 31 --json
 node bin/aiei.mjs inspect github example/open-source-repo 31 --receipt path/to/receipt.json --json
 ```
 
-The last command attempts to corroborate the receipt's canonical GitHub Actions URLs (`https://github.com/<owner>/<repo>/actions/runs/<id>`) and check run URLs (`https://github.com/<owner>/<repo>/runs/<id>`) with the **same exact current PR head SHA**. Only supported recorded `pass`/`fail` results can match terminated remote runs; `blocked`, `not_run`, pending, stale or absent evidence cannot be marked corroborated. Coverage descriptions and human approvals remain unverified. Do not point the tool at clinical, client-private or organizational resources without verified authority to inspect them.
+The last command attempts to corroborate the receipt's canonical GitHub Actions URLs (`https://github.com/<owner>/<repo>/actions/runs/<id>`) and check run URLs (`https://github.com/<owner>/<repo>/runs/<id>`) with the **same exact current PR head SHA**. A check must also name the same GitHub run, and a single GitHub run link cannot be reused to corroborate multiple receipt checks. Only supported recorded `pass`/`fail` results can match terminated remote runs; `blocked`, `not_run`, pending, stale or absent evidence cannot be marked corroborated. The exact-name and one-to-one link checks prevent a successful lint run from being relabeled as a separate security check. They do not prove what the linked test actually exercised, or the validity of `covers[]` descriptions. Coverage descriptions and human approvals remain unverified. Do not point the tool at clinical, client-private or organizational resources without verified authority to inspect them.
 
 For a private repo, set an environment variable only in the permitted local/CI secret context, never in a shell command, committed file, chat or shared screenshot:
 

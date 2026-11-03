@@ -1,6 +1,6 @@
 # AIEI — AI Engineering Integrity & Learning
 
-> **Status:** v0.3.0 standalone, source-only engineering core with bounded read-only GitHub API evidence observation. Source is published in the dedicated GitHub repository; live GitHub API acceptance, autonomous security certification, production release integration, and deployment are not implemented.
+> **Status:** v0.3.1 standalone, source-only engineering core with bounded read-only GitHub API evidence observation. Source is published in the dedicated GitHub repository; live GitHub API acceptance, autonomous security certification, production release integration, and deployment are not implemented.
 
 AIEI is a **standalone**, fully open-source, self-hostable-by-default engineering integrity toolkit. It helps engineers retain ownership of AI-assisted work by freezing requirements, recording precise check claims, challenging false evidence, and keeping a human accountable for release decisions.
 
@@ -15,7 +15,7 @@ AIEI is **not** an AI code generator. Its current CLI uses Node.js 22+ and no th
 - Reject production `LIVE` assertions derived only from synthetic checks; distinguish an internal consistency check from real external validation.
 - Run deterministic built-in Node tests with deliberate false-confidence cases.
 - Provide structured JSON output suitable for future integration with GitHub Actions and an optional read-only DevonStation interface.
-- Inspect a PR's current head SHA, exact-head checks, commit statuses and Actions runs using bounded, read-only GitHub API requests. Safely fetch up to 10 pages / 1,000 records in each collection without following untrusted pagination links; fail closed when records are missing or limits are exceeded. Recheck the PR for changes during inspection. Optionally corroborate supported review-receipt links against current GitHub run metadata. This does not prove test assertions, reviewer signatures, approvals or live behavior.
+- Inspect a PR's current head SHA, exact-head checks, commit statuses and Actions runs using bounded, read-only GitHub API requests. Safely fetch up to 10 pages / 1,000 records in each collection without following untrusted pagination links; fail closed when records are missing or limits are exceeded. Recheck the PR for changes during inspection. Optionally corroborate supported review-receipt links against exact check names, unique GitHub run IDs, and current GitHub run metadata. This does not prove test assertions, reviewer signatures, approvals or live behavior.
 
 AIEI cannot independently reproduce a test, authenticate a human release decision, inspect arbitrary backend source, or observe a production deployment. The new adapter observes only selected GitHub-hosted metadata. It does not issue **GO** approval. Every assessment marks `independently_verified: false` and, at most, `ready_for_human_review: true`.
 
