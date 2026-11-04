@@ -22,6 +22,8 @@
     "bin",
     "lib",
     "docs",
+    "examples",
+    ".github/assets/readme-hero.svg",
     "LICENSE",
     "README.md",
     "SECURITY.md",

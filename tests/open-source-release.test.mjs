@@ -14,6 +14,9 @@ const REQUIRED = Object.freeze([
   'bin/aiei.mjs',
   'lib/index.mjs',
   'docs/OPEN-SOURCE.md',
+  'examples/contract.json',
+  'examples/receipt.json',
+  '.github/assets/readme-hero.svg',
 ]);
 
 function isPrivatePath(path) {
@@ -84,6 +87,10 @@ test('rejects missing, falsely declared, or inconsistent license material', () =
 test('rejects phantom manifest entries and incomplete distributable packages', () => {
   assert.match(evaluate({ ...validFixture, manifest: { ...validFixture.manifest, files: [...validFixture.manifest.files, 'schemas'] } }).join(' '), /schemas/);
   assert.match(evaluate({ ...validFixture, packedPaths: ['LICENSE'] }).join(' '), /bin\/aiei.mjs/);
+  for (const path of ['examples/contract.json', 'examples/receipt.json', '.github/assets/readme-hero.svg']) {
+    assert.ok(evaluate({ ...validFixture, packedPaths: REQUIRED.filter(entry => entry !== path) })
+      .includes(`Published package is missing ${path}`));
+  }
 });
 
 test('rejects accidental private files and unnoticed runtime dependencies', () => {

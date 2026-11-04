@@ -27,6 +27,8 @@ AIEI cannot independently reproduce a test, authenticate a human release decisio
 
 ## Quick start
 
+From a Git checkout (the lockfile and development tests live in the repository):
+
 ```sh
 node --version                         # Requires Node 22+
 npm ci --ignore-scripts
@@ -44,6 +46,8 @@ node bin/aiei.mjs inspect github <owner/repo> <pr-number> --receipt <receipt.jso
 ```
 
 The final `assess` command intentionally exits with code **1** because the supplied example is **NO_GO**; this is correct. The example is fictional and makes no claim that an external test was run. Exit codes: `0` structurally valid or successful **observed metadata check**, `1` invalid/blocked/incomplete/pending/failed, `2` unreadable input, unavailable API or invalid invocation. A `0` on `assess` means only *eligible for further human review*, never permission to merge, deploy or take action.
+
+To build and install a local tarball without a registry account, follow the [offline package rehearsal](docs/OPEN-SOURCE.md#offline-package-rehearsal). The package includes the CLI, library, docs, README artwork and synthetic examples; development tests, lockfile and CI configuration remain in the repository. No npm registry publication is claimed.
 
 ## Repository layout
 
