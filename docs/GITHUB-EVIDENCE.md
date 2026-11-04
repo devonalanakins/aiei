@@ -34,12 +34,12 @@ The variable name is `AIEI_GITHUB_TOKEN`. A minimal fine-grained GitHub token fo
 - The JSON output now includes `summary.pages_fetched` and the explicit per-collection item/page limits; do not interpret `collection_complete: true` as proof that branch-protection-required checks were configured or actually tested the intended feature.
 - Only returned IDs/names/conclusions and bounded metadata are kept; secrets, message bodies, request headers, and raw third-party URLs are never included.
 - All results describe the commit observed **during that request**, not a pinned immutable release approval. A new commit must be inspected again.
-- A passing run recorded by GitHub does not mean the job tests what it claims or that an artifact is deployed. No human identity or signature is authenticated by AIEI.
+- A passing run recorded by GitHub does not mean the job tests what it claims or that an artifact is deployed. No human identity or signature is authenticated by Merit.
 
 Exit codes: `0` means a complete observation with all **observed** checks successful (and, when provided, all supported receipt links corroborated). `1` means a completed inspection found pending, failing, incomplete or contradictory check metadata. `2` means invalid invocation, bad input, unavailable API or unsupported response. **None is a release authorization.** The CLI is intentionally advisory and does not create required branch checks, merge PRs or deploy software.
 
 ## First real pilot and gaps
 
-After `devonalanakins/aiei` exists as a remote, verify exact-head CI for AIEI itself and separately inspect an existing public-safe PR (candidate: DevonStation Communications #31, without reading mail data). Compare observed checks against an independently written acceptance contract. Keep project and AIEI files in separate repositories. Future work should read branch-protection-required checks and produce a reusable verified-attestation or provenance artifact; neither capability exists in v0.3.
+With the existing public repository renamed to `devonalanakins/merit`, verify exact-head CI for Merit itself and separately inspect an existing public-safe PR (candidate: DevonStation Communications #31, without reading mail data). Compare observed checks against an independently written acceptance contract. Keep project and Merit files in separate repositories. Future work should read branch-protection-required checks and produce a reusable verified-attestation or provenance artifact; neither capability exists in v0.3.
 
 GitHub REST references: [pull requests](https://docs.github.com/en/rest/pulls/pulls), [check runs](https://docs.github.com/en/rest/checks/runs), [commit statuses](https://docs.github.com/en/rest/commits/statuses), [workflow runs](https://docs.github.com/en/rest/actions/workflow-runs).
