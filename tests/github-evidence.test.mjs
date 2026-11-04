@@ -162,7 +162,8 @@ test('a terminal GitHub failure can corroborate an explicitly failing check, but
   const s=await inspect({fetchImpl:simulatedFetch(f)});
   const r=matchingReceipt();r.checks[0].result='fail';
   const comparison=compareGitHubReceipt(s,r);
-  assert.equal(comparison.valid,true);
+  assert.equal(comparison.valid,false);
+  assert.equal(comparison.matched.length,2); // Failure evidence remains correlated, but does not make the PR snapshot successful.
   assert.equal(comparison.release_authorized,false);
   assert.equal(s.summary.all_observed_checks_successful,false);
   r.checks[0].result='blocked';
@@ -195,4 +196,73 @@ test('check-run names must match canonical observed identity exactly',async()=>{
   const receipt=matchingReceipt();
   receipt.checks[1].name='Unit and Security';
   assert.equal(compareGitHubReceipt(s,receipt).valid,false);
+});
+
+test('unrelated failed check cannot be hidden behind corroborated passing receipt checks',async()=>{
+  const f=fixture();
+  f.check_runs.total_count=2;
+  f.check_runs.check_runs.push({id:102,name:'required security scan',head_sha:SHA,status:'completed',conclusion:'failure',app:{slug:'github-actions'}});
+  const s=await inspect({fetchImpl:simulatedFetch(f)});
+  const result=compareGitHubReceipt(s,matchingReceipt());
+  assert.equal(result.matched.length,2);
+  assert.equal(s.summary.all_observed_checks_successful,false);
+  assert.equal(result.valid,false);
+  assert(result.blockers.some(reason=>/snapshot|observed|successful|fail/i.test(reason)));
+});
+
+test('unrelated pending workflow cannot be hidden behind passing receipt checks',async()=>{
+  const f=fixture();
+  f.workflow_runs.total_count=2;
+  f.workflow_runs.workflow_runs.push({id:203,name:'deployment guard',head_sha:SHA,status:'queued',conclusion:null,event:'pull_request'});
+  const s=await inspect({fetchImpl:simulatedFetch(f)});
+  const result=compareGitHubReceipt(s,matchingReceipt());
+  assert.equal(result.matched.length,2);
+  assert.equal(s.summary.all_observed_checks_successful,false);
+  assert.equal(result.valid,false);
+});
+
+test('skipped checks never substantiate an all-successful observation',async()=>{
+  const f=fixture();
+  f.check_runs.total_count=2;
+  f.check_runs.check_runs.push({id:103,name:'security negative cases',head_sha:SHA,status:'completed',conclusion:'skipped',app:{slug:'github-actions'}});
+  const result=compareGitHubReceipt(await inspect({fetchImpl:simulatedFetch(f)}),matchingReceipt());
+  assert.equal(result.valid,false);
+});
+
+test('a forged green summary cannot hide a failed observed run',async()=>{
+  const s=await inspect();
+  s.check_runs[0].conclusion='failure';
+  s.summary.all_observed_checks_successful=true;
+  const result=compareGitHubReceipt(s,matchingReceipt());
+  assert.equal(result.valid,false);
+});
+
+test('contradictory or missing snapshots cannot be interpreted as clean evidence',async()=>{
+  const s=await inspect();
+  s.summary.all_observed_checks_successful=false;
+  assert.equal(compareGitHubReceipt(s,matchingReceipt()).valid,false);
+  assert.equal(compareGitHubReceipt(null,matchingReceipt()).valid,false);
+});
+
+test('malformed or incomplete observation collections fail closed without throwing',async()=>{
+  const s=await inspect();
+  s.workflow_runs=null;
+  assert.equal(compareGitHubReceipt(s,matchingReceipt()).valid,false);
+  const t=await inspect();
+  t.summary.collection_complete=false;
+  assert.equal(compareGitHubReceipt(t,matchingReceipt()).valid,false);
+});
+
+test('recorded run SHA mismatch cannot be hidden by a clean summary',async()=>{
+  const s=await inspect();
+  s.workflow_runs[0].sha='f'.repeat(40);
+  assert.equal(s.summary.all_observed_checks_successful,true);
+  assert.equal(compareGitHubReceipt(s,matchingReceipt()).valid,false);
+});
+
+test('pending commit status cannot be laundered by passing check runs',async()=>{
+  const s=await inspect();
+  s.commit_status.statuses[0].state='pending';
+  s.commit_status.combined_state='pending';
+  assert.equal(compareGitHubReceipt(s,matchingReceipt()).valid,false);
 });
