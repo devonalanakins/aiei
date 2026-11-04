@@ -1,0 +1,26 @@
+name: Merit x Rhen bounded semantic evidence experiment
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  semantic-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Merit review branch
+        uses: actions/checkout@v4
+      - name: Checkout pinned Rhen typed-preview evidence exporter
+        uses: actions/checkout@v4
+        with:
+          repository: devonalanakins/rhen
+          ref: 1ccc3564b315b91f932fde3df97ab88cbb30d6cc
+          path: rhen-checkout
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run independent oracle and deliberate evidence-corruption challenge
+        run: node --test integration/rhen-to-merit.test.mjs
