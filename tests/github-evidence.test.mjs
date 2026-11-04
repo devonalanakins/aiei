@@ -243,3 +243,26 @@ test('contradictory or missing snapshots cannot be interpreted as clean evidence
   assert.equal(compareGitHubReceipt(s,matchingReceipt()).valid,false);
   assert.equal(compareGitHubReceipt(null,matchingReceipt()).valid,false);
 });
+
+test('malformed or incomplete observation collections fail closed without throwing',async()=>{
+  const s=await inspect();
+  s.workflow_runs=null;
+  assert.equal(compareGitHubReceipt(s,matchingReceipt()).valid,false);
+  const t=await inspect();
+  t.summary.collection_complete=false;
+  assert.equal(compareGitHubReceipt(t,matchingReceipt()).valid,false);
+});
+
+test('recorded run SHA mismatch cannot be hidden by a clean summary',async()=>{
+  const s=await inspect();
+  s.workflow_runs[0].sha='f'.repeat(40);
+  assert.equal(s.summary.all_observed_checks_successful,true);
+  assert.equal(compareGitHubReceipt(s,matchingReceipt()).valid,false);
+});
+
+test('pending commit status cannot be laundered by passing check runs',async()=>{
+  const s=await inspect();
+  s.commit_status.statuses[0].state='pending';
+  s.commit_status.combined_state='pending';
+  assert.equal(compareGitHubReceipt(s,matchingReceipt()).valid,false);
+});
