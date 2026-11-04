@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
 import {exportTypedSemanticEvidence} from '../rhen-checkout/src/semantic-evidence.mjs';
 import {compileTypedPreview} from '../rhen-checkout/src/typed-preview.mjs';
 import {evaluateEvidenceGraph,digestJSON} from '../lib/evidence-graph.mjs';
@@ -8,9 +9,9 @@ import {evaluateEvidenceGraph,digestJSON} from '../lib/evidence-graph.mjs';
 // Pre-specified independently of the evaluator and emitted code.
 // This case checks ordered stdout prefix and checked SafeInt overflow.
 // The assertion does not establish correctness for all possible programs.
-const source='print 7\nprint 9007199254740991\nprint 9007199254740991 + 1';
+const source=readFileSync(new URL('../rhen-checkout/examples/merit-safeint-boundary.rn',import.meta.url),'utf8');
 const expected={stdout:['7','9007199254740991'],trap:'overflow'};
-const revision='1ccc3564b315b91f932fde3df97ab88cbb30d6cc';
+const revision='827d5640da195d06f88321a7e0c5d386845027cc';
 const observedAt='2026-11-04T21:00:00Z';
 const reference=exportTypedSemanticEvidence(source,{
   repository:'devonalanakins/rhen',revision,claim_id:'safeint-boundary-v1',
