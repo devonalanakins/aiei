@@ -4,7 +4,7 @@
 
 > **Repository status · November 3, 2026:** The default branch contains a source-only engineering toolkit. Independent production verification, autonomous approval and deployment integration are not claimed.
 
-[Architecture](docs/ARCHITECTURE.md) · [Trust boundaries](docs/RELEASE-GATES.md) · [Security](SECURITY.md)
+[Architecture](docs/ARCHITECTURE.md) · [Trust boundaries](docs/RELEASE-GATES.md) · [Security](SECURITY.md) · [Open-source distribution](docs/OPEN-SOURCE.md)
 
 > **Status:** v0.3.0 standalone, source-only engineering core with bounded read-only GitHub API evidence observation. Source is published in the dedicated GitHub repository; live GitHub API acceptance, autonomous security certification, production release integration, and deployment are not implemented.
 
@@ -80,5 +80,7 @@ Use the real project's own repository and infrastructure as the source of truth.
 See [architecture](docs/ARCHITECTURE.md), [GitHub evidence and token scopes](docs/GITHUB-EVIDENCE.md), [release gates](docs/RELEASE-GATES.md), [learning](docs/LEARNING.md), [security](SECURITY.md), and [development roadmap](docs/ROADMAP.md).
 
 ## License
+
+The distributable source package is checked during `npm test` for license metadata, expected source and docs, and accidental inclusion of private-looking files. See [open-source distribution](docs/OPEN-SOURCE.md) for the scope and limitations of these checks.
 
 Apache-2.0. This allows independent open-source projects, including projects under stronger copyleft terms, to use AIEI without combining their repositories. License selection is limited to this independent toolkit; it does not relicense any other project.

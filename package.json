@@ -21,9 +21,10 @@
   "files": [
     "bin",
     "lib",
-    "schemas",
     "docs",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "SECURITY.md",
+    "CONTRIBUTING.md"
   ]
 }
