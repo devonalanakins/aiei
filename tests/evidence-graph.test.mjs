@@ -80,3 +80,15 @@ test('policy must have required independent obligations',()=>{
   const x=structuredClone(policy);x.obligations=[];
   assert.equal(evaluateEvidenceGraph(packet(),x).verdict,'INSUFFICIENT');
 });
+
+test('direct and multi-hop witness cycles cannot substantiate claims',()=>{
+  assert.equal(evaluate(p=>{p.witnesses[0].depends_on=['w0']}).verdict,'UNTRUSTED_SOURCE');
+  assert.equal(evaluate(p=>{
+    p.witnesses[0].depends_on=['w1'];
+    p.witnesses[1].depends_on=['w2'];
+    p.witnesses[2].depends_on=['w0'];
+  }).verdict,'UNTRUSTED_SOURCE');
+});
+test('dangling witness dependencies reject rather than silently disappear',()=>{
+  assert.equal(evaluate(p=>{p.witnesses[0].depends_on=['missing-proof']}).verdict,'UNTRUSTED_SOURCE');
+});
