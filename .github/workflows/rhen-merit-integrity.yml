@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: devonalanakins/rhen
-          ref: 1ccc3564b315b91f932fde3df97ab88cbb30d6cc
+          ref: 827d5640da195d06f88321a7e0c5d386845027cc
           path: rhen-checkout
           persist-credentials: false
       - name: Set up Node 22
