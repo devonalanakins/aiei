@@ -4,7 +4,7 @@
 
 > **Repository status · November 3, 2026:** The default branch contains a source-only engineering toolkit. Independent production verification, autonomous approval and deployment integration are not claimed.
 
-[Architecture](docs/ARCHITECTURE.md) · [Trust boundaries](docs/RELEASE-GATES.md) · [Security](SECURITY.md)
+[Architecture](docs/ARCHITECTURE.md) · [Trust boundaries](docs/RELEASE-GATES.md) · [Security](SECURITY.md) · [Open-source distribution](docs/OPEN-SOURCE.md)
 
 > **Status:** v0.3.0 standalone, source-only engineering core with bounded read-only GitHub API evidence observation. Source is published in the dedicated GitHub repository; live GitHub API acceptance, autonomous security certification, production release integration, and deployment are not implemented.
 
@@ -27,6 +27,8 @@ AIEI cannot independently reproduce a test, authenticate a human release decisio
 
 ## Quick start
 
+From a Git checkout (the lockfile and development tests live in the repository):
+
 ```sh
 node --version                         # Requires Node 22+
 npm ci --ignore-scripts
@@ -44,6 +46,8 @@ node bin/aiei.mjs inspect github <owner/repo> <pr-number> --receipt <receipt.jso
 ```
 
 The final `assess` command intentionally exits with code **1** because the supplied example is **NO_GO**; this is correct. The example is fictional and makes no claim that an external test was run. Exit codes: `0` structurally valid or successful **observed metadata check**, `1` invalid/blocked/incomplete/pending/failed, `2` unreadable input, unavailable API or invalid invocation. A `0` on `assess` means only *eligible for further human review*, never permission to merge, deploy or take action.
+
+To build and install a local tarball without a registry account, follow the [offline package rehearsal](docs/OPEN-SOURCE.md#offline-package-rehearsal). The package includes the CLI, library, docs, README artwork and synthetic examples; development tests, lockfile and CI configuration remain in the repository. No npm registry publication is claimed.
 
 ## Repository layout
 
@@ -80,5 +84,7 @@ Use the real project's own repository and infrastructure as the source of truth.
 See [architecture](docs/ARCHITECTURE.md), [GitHub evidence and token scopes](docs/GITHUB-EVIDENCE.md), [release gates](docs/RELEASE-GATES.md), [learning](docs/LEARNING.md), [security](SECURITY.md), and [development roadmap](docs/ROADMAP.md).
 
 ## License
+
+The distributable source package is checked during `npm test` for license metadata, expected source and docs, and accidental inclusion of private-looking files. See [open-source distribution](docs/OPEN-SOURCE.md) for the scope and limitations of these checks.
 
 Apache-2.0. This allows independent open-source projects, including projects under stronger copyleft terms, to use AIEI without combining their repositories. License selection is limited to this independent toolkit; it does not relicense any other project.

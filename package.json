@@ -19,11 +19,23 @@
   },
   "license": "Apache-2.0",
   "files": [
-    "bin",
-    "lib",
-    "schemas",
-    "docs",
+    "bin/aiei.mjs",
+    "lib/index.mjs",
+    "lib/validate.mjs",
+    "lib/assess.mjs",
+    "lib/github-evidence.mjs",
+    "docs/ARCHITECTURE.md",
+    "docs/GITHUB-EVIDENCE.md",
+    "docs/LEARNING.md",
+    "docs/OPEN-SOURCE.md",
+    "docs/RELEASE-GATES.md",
+    "docs/ROADMAP.md",
+    "examples/contract.json",
+    "examples/receipt.json",
+    ".github/assets/readme-hero.svg",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "SECURITY.md",
+    "CONTRIBUTING.md"
   ]
 }
