@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, lstatSync, cpSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
+import { resolve, join, dirname } from 'node:path';
+import { tmpdir } from 'node:os';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const REQUIRED = Object.freeze([
@@ -25,6 +26,11 @@ function isPrivatePath(path) {
     part === '.private' || part === 'node_modules' ||
     /\.(?:pem|key|p12|sqlite|sqlite3)$/i.test(part) ||
     /^id_(?:rsa|ed25519|ecdsa)(?:\.pub)?$/.test(part));
+}
+
+function isExplicitFilePath(path) {
+  return typeof path === 'string' && /^(?:[A-Za-z0-9_.-]+\/)*[A-Za-z0-9_.-]+$/.test(path) &&
+    !path.split('/').some(part => part === '.' || part === '..');
 }
 
 function evaluate({ manifest, lock, licenseText, packedPaths, sourcePaths }) {
@@ -49,15 +55,18 @@ function evaluate({ manifest, lock, licenseText, packedPaths, sourcePaths }) {
     errors.push('package.json must explicitly identify distributable files');
   } else {
     for (const path of manifest.files) {
-      if (typeof path !== 'string' || !sourcePaths.includes(path)) {
-        errors.push(`package.json files entry missing from repository: ${String(path)}`);
+      if (!isExplicitFilePath(path) || !sourcePaths.includes(path)) {
+        errors.push(`package.json files entry must name an existing regular file: ${String(path)}`);
       }
+      if (!packedPaths.includes(path)) errors.push(`Listed distribution file was not packed: ${String(path)}`);
     }
   }
   for (const path of REQUIRED) {
     if (!packedPaths.includes(path)) errors.push(`Published package is missing ${path}`);
   }
+  const allowed = new Set(['package.json', ...(Array.isArray(manifest?.files) ? manifest.files : [])]);
   for (const path of packedPaths) {
+    if (!allowed.has(path)) errors.push(`Unlisted file entered the package: ${path}`);
     if (isPrivatePath(path)) errors.push(`Published package includes private-looking path: ${path}`);
   }
   return errors;
@@ -66,12 +75,12 @@ function evaluate({ manifest, lock, licenseText, packedPaths, sourcePaths }) {
 const validFixture = {
   manifest: {
     license: 'Apache-2.0',
-    files: ['bin', 'lib', 'docs', 'LICENSE', 'README.md', 'SECURITY.md', 'CONTRIBUTING.md'],
+    files: [...REQUIRED],
   },
   lock: { packages: { '': { license: 'Apache-2.0' } } },
   licenseText: 'Apache License\nVersion 2.0, January 2004\nEND OF TERMS AND CONDITIONS',
-  packedPaths: [...REQUIRED],
-  sourcePaths: ['bin', 'lib', 'docs', 'LICENSE', 'README.md', 'SECURITY.md', 'CONTRIBUTING.md'],
+  packedPaths: ['package.json', ...REQUIRED],
+  sourcePaths: [...REQUIRED],
 };
 
 test('open-source publication metadata accepts a coherent package', () => {
@@ -99,6 +108,17 @@ test('rejects accidental private files and unnoticed runtime dependencies', () =
   assert.match(evaluate({ ...validFixture, manifest: { ...validFixture.manifest, dependencies: { 'opaque-agent': '1.0.0' } } }).join(' '), /dependency-free/);
 });
 
+test('requires explicit file entries and rejects unlisted package contents', () => {
+  for (const path of ['docs', 'docs/**', '../outside.json', '/absolute.json', 'docs\\backup.json']) {
+    const manifest = { ...validFixture.manifest, files: [...REQUIRED, path] };
+    assert.match(evaluate({ ...validFixture, manifest }).join(' '), /existing regular file/);
+  }
+  assert.match(evaluate({ ...validFixture, packedPaths: [...REQUIRED, 'docs/internal-export.json'] }).join(' '), /Unlisted file/);
+  const path = 'docs/additional-guide.md';
+  const manifest = { ...validFixture.manifest, files: [...REQUIRED, path] };
+  assert.match(evaluate({ ...validFixture, manifest, sourcePaths: [...REQUIRED, path] }).join(' '), /not packed/);
+});
+
 test('the actual source can be packaged with the expected open-source materials', () => {
   const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   const lock = JSON.parse(readFileSync(new URL('../package-lock.json', import.meta.url), 'utf8'));
@@ -114,6 +134,43 @@ test('the actual source can be packaged with the expected open-source materials'
   const packages = JSON.parse(result.stdout);
   assert.equal(packages.length, 1, 'exactly one package must be staged');
   const packedPaths = packages[0].files.map(file => file.path);
-  const sourcePaths = (manifest.files ?? []).filter(path => existsSync(resolve(ROOT, path)));
+  const sourcePaths = (manifest.files ?? []).filter(path => isExplicitFilePath(path) &&
+    existsSync(resolve(ROOT, path)) && lstatSync(resolve(ROOT, path)).isFile());
   assert.deepEqual(evaluate({ manifest, lock, licenseText, packedPaths, sourcePaths }), []);
+});
+
+test('packaging excludes unreviewed files added beside distributable source, docs and examples', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'aiei-pack-boundary-'));
+  try {
+    const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+    for (const path of ['package.json', ...manifest.files]) {
+      const destination = join(fixture, path);
+      mkdirSync(dirname(destination), { recursive: true });
+      cpSync(join(ROOT, path), destination, { recursive: true });
+    }
+    const unreviewed = [
+      'bin/local-debug.mjs',
+      'lib/session-cache.txt',
+      'docs/internal-export.json',
+      'examples/customer-records.csv',
+      '.github/assets/unreviewed.svg',
+    ];
+    for (const path of unreviewed) {
+      writeFileSync(join(fixture, path), 'SYNTHETIC PACKAGING FIXTURE ONLY\n');
+    }
+    const result = spawnSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts', '--offline', '--silent'], {
+      cwd: fixture, encoding: 'utf8', timeout: 30_000,
+      env: { ...process.env, npm_config_update_notifier: 'false' },
+    });
+    assert.equal(result.error, undefined, result.error?.message);
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const packages = JSON.parse(result.stdout);
+    assert.equal(packages.length, 1);
+    const packedPaths = packages[0].files.map(file => file.path);
+    assert.deepEqual(unreviewed.filter(path => packedPaths.includes(path)), [],
+      'unreviewed adjacent files must never enter the package automatically');
+    for (const path of REQUIRED) assert.ok(packedPaths.includes(path), `required file missing: ${path}`);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
 });

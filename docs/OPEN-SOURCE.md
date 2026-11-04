@@ -40,6 +40,12 @@ The last command must exit **1** with `ready_for_human_review: false`: the suppl
 
 The tarball includes runtime source, docs, synthetic examples and README artwork. Development tests, `package-lock.json`, `AGENTS.md` and CI configuration remain in the public Git repository; run development commands such as `npm ci` and `npm test` from that checkout, not the installed package. The existing Apache-2.0 terms and per-project ownership boundaries are unchanged.
 
+## Explicit distribution boundary
+
+`package.json` lists each distributable file individually. Directory entries and glob patterns are not accepted by the release tests. Apart from npm's required `package.json`, every packed file must appear in that list and every listed file must exist as a regular file and actually be packed. Adding a file to `lib`, `bin`, `docs` or `examples` alone does not publish it. Add a new public file to the list deliberately, review its contents and rights, then run the complete tests.
+
+An isolated packaging regression places synthetic extra source, cache, export, CSV and artwork files beside the selected files and verifies that npm excludes them while retaining the required materials. This reduces accidental inclusion; it is not a content scanner and cannot establish publication rights or detect secrets inserted into an already listed file. Review all included content before publishing.
+
 ## Maintenance and contributions
 
 Contributors follow [CONTRIBUTING.md](../CONTRIBUTING.md) and [SECURITY.md](../SECURITY.md). Every meaningful change identifies its intended outcome, negative cases, exact tested revision and remaining unverified claims. Dependencies and licensing changes require an explicit compatibility and security review; the present core has zero third-party runtime dependencies.
