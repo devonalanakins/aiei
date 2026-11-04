@@ -1,4 +1,10 @@
+<p align="center"><img src=".github/assets/readme-hero.svg" alt="Original AIEI project banner" width="100%" /></p>
+
 # AIEI — AI Engineering Integrity & Learning
+
+> **Repository status · November 3, 2026:** The default branch contains a source-only engineering toolkit. Independent production verification, autonomous approval and deployment integration are not claimed.
+
+[Architecture](docs/ARCHITECTURE.md) · [Trust boundaries](docs/RELEASE-GATES.md) · [Security](SECURITY.md)
 
 > **Status:** v0.3.0 standalone, source-only engineering core with bounded read-only GitHub API evidence observation. Source is published in the dedicated GitHub repository; live GitHub API acceptance, autonomous security certification, production release integration, and deployment are not implemented.
 
