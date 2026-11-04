@@ -1,6 +1,6 @@
-<p align="center"><img src=".github/assets/readme-hero.svg" alt="Original AIEI project banner" width="100%" /></p>
+<p align="center"><img src=".github/assets/readme-hero.svg" alt="Original Merit project banner" width="100%" /></p>
 
-# AIEI — AI Engineering Integrity & Learning
+# Merit — Engineering Integrity & Evidence
 
 > **Repository status · November 3, 2026:** The default branch contains a source-only engineering toolkit. Independent production verification, autonomous approval and deployment integration are not claimed.
 
@@ -8,14 +8,16 @@
 
 > **Status:** v0.3.0 standalone, source-only engineering core with bounded read-only GitHub API evidence observation. Source is published in the dedicated GitHub repository; live GitHub API acceptance, autonomous security certification, production release integration, and deployment are not implemented.
 
-AIEI is a **standalone**, fully open-source, self-hostable-by-default engineering integrity toolkit. It helps engineers retain ownership of AI-assisted work by freezing requirements, recording precise check claims, challenging false evidence, and keeping a human accountable for release decisions.
+Merit is a **standalone**, fully open-source, self-hostable-by-default engineering integrity toolkit. It helps engineers retain ownership of AI-assisted work by freezing requirements, recording precise check claims, challenging false evidence, and keeping a human accountable for release decisions.
 
-AIEI is **not** an AI code generator. Its current CLI uses Node.js 22+ and no third-party runtime dependencies. The dedicated AIEI repository is independent of DevonStation, Anevum, Cristy's systems and future client repositories; integrations must use explicit, least-privilege access rather than source-code merging.
+Merit is **not** an AI code generator. Its current CLI uses Node.js 22+ and no third-party runtime dependencies. The dedicated Merit repository is independent of DevonStation, Anevum, Cristy's systems and future client repositories; integrations must use explicit, least-privilege access rather than source-code merging.
+
+> **Name change:** Merit was previously known as AIEI. Its existing `aiei` CLI command, `bin/aiei.mjs` entrypoint, npm package identity, `AIEI_GITHUB_TOKEN` environment variable, JSON schema identifiers, and historical GitHub references are retained during the compatibility transition. Renaming the repository does not certify its behavior or change existing review gates.
 
 ## What works now
 
 - Validate a bounded, versioned engineering work contract (`schema_version: 1`).
-- Validate a versioned receipt compatible with the **AI Code Integrity Audit receipt v1** fields, with optional AIEI provenance extensions.
+- Validate a versioned receipt compatible with the **AI Code Integrity Audit receipt v1** fields, with optional Merit provenance extensions.
 - Compare a receipt to the original frozen acceptance and negative cases; reject changed requirements, unaccounted check coverage, mismatched commit SHAs, failed/blocked/unrun checks, and missing review gates.
 - Enforce escalating requirements for R2 stateful and R3 high-consequence changes, including a separate named R3 reviewer and recovery evidence.
 - Reject production `LIVE` assertions derived only from synthetic checks; distinguish an internal consistency check from real external validation.
@@ -23,7 +25,7 @@ AIEI is **not** an AI code generator. Its current CLI uses Node.js 22+ and no th
 - Provide structured JSON output suitable for future integration with GitHub Actions and an optional read-only DevonStation interface.
 - Inspect a PR's current head SHA, exact-head checks, commit statuses and Actions runs using bounded, read-only GitHub API requests. Safely fetch up to 10 pages / 1,000 records in each collection without following untrusted pagination links; fail closed when records are missing or limits are exceeded. Recheck the PR for changes during inspection. Optionally corroborate supported review-receipt links against current GitHub run metadata. This does not prove test assertions, reviewer signatures, approvals or live behavior.
 
-AIEI cannot independently reproduce a test, authenticate a human release decision, inspect arbitrary backend source, or observe a production deployment. The new adapter observes only selected GitHub-hosted metadata. It does not issue **GO** approval. Every assessment marks `independently_verified: false` and, at most, `ready_for_human_review: true`.
+Merit cannot independently reproduce a test, authenticate a human release decision, inspect arbitrary backend source, or observe a production deployment. The new adapter observes only selected GitHub-hosted metadata. It does not issue **GO** approval. Every assessment marks `independently_verified: false` and, at most, `ready_for_human_review: true`.
 
 ## Quick start
 
@@ -67,7 +69,7 @@ The final `assess` command intentionally exits with code **1** because the suppl
 5. **Prove** — link source SHA, test environment, actual evidence, qualified human approval and observed deployment separately.
 6. **Operate + learn** — preserve ownership, runbooks, incident response, recovery, and maintainer teach-back.
 
-Use the real project's own repository and infrastructure as the source of truth. AIEI's local JSON files are portable **review packets**, not a replacement database for GitHub, Notion, CI or deployment-provider records.
+Use the real project's own repository and infrastructure as the source of truth. Merit's local JSON files are portable **review packets**, not a replacement database for GitHub, Notion, CI or deployment-provider records.
 
 ## Safety
 
@@ -81,4 +83,4 @@ See [architecture](docs/ARCHITECTURE.md), [GitHub evidence and token scopes](doc
 
 ## License
 
-Apache-2.0. This allows independent open-source projects, including projects under stronger copyleft terms, to use AIEI without combining their repositories. License selection is limited to this independent toolkit; it does not relicense any other project.
+Apache-2.0. This allows independent open-source projects, including projects under stronger copyleft terms, to use Merit without combining their repositories. License selection is limited to this independent toolkit; it does not relicense any other project.

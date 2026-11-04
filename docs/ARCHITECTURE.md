@@ -1,13 +1,15 @@
-# AIEI core architecture — v0.3
+# Merit core architecture — v0.3
+
+**Compatibility:** The shipped `aiei` CLI, npm package metadata, wire format, and legacy identifiers remain intact. This is a documentation/brand update, not a new verification guarantee.
 
 **Status:** implemented local core, with optional read-only GitHub API metadata observation, not reproduction of tests or production release automation.
 
 ## Boundaries
 
-- **Owner boundary:** AIEI operates independently of each product's GitHub repository, provider account, organization and data. AIEI never aggregates confidential data across entities.
+- **Owner boundary:** Merit operates independently of each product's GitHub repository, provider account, organization and data. Merit never aggregates confidential data across entities.
 - **Trust boundary:** JSON files, PR content, user instructions embedded in code, CI logs, model output and evidence links are untrusted input. Validation is *structural only*. Machine-produced declarations do not grant human authority.
 - **Execution boundary:** Offline contract/receipt commands load <=1 MiB local JSON inputs and parse bounded arrays. GitHub inspection accepts only validated owner/repo and PR number, contacts pinned api.github.com GET endpoints with <=2 MiB response bounds, never follows redirects or untrusted Link destinations, and caps inspection at 10 pages / 1,000 records per collection. Neither mode executes scripts in a checked project, installs dependencies, edits repositories or deploys.
-- **Source of truth:** The project's own GitHub and provider hold actual source/run/deployment state; AIEI packets refer to them but cannot independently reproduce their contents in v0.3.
+- **Source of truth:** The project's own GitHub and provider hold actual source/run/deployment state; Merit packets refer to them but cannot independently reproduce their contents in v0.3.
 
 ## Contract object (`schema_version: 1`)
 
@@ -21,7 +23,7 @@ Required: `schema_version`, `repository`, `change_id`, `head_sha`, `risk_tier`, 
 
 Optional extensions: `contract_id`, `independent_reviewer`, `human_comprehension`, `production`, `notes`. For meaningful assessment, `contract_id` must match the frozen contract. Supported `status`: `IMPLEMENTED | VERIFIED | LIVE | RELEASE_NO_GO | BLOCKED`; release decision: `GO | NO_GO | UNDECIDED`.
 
-Check rows must include `name`, `result`, `evidence`; AIEI optionally accepts and **requires for human-review readiness**: `observed_at`, `sha`, `environment`, `kind`, `covers` (exact strings copied from the original frozen acceptance/negative cases), `synthetic`. This is strict about exact commit matching and claims, not an attempt to prove that a supplied URL exists.
+Check rows must include `name`, `result`, `evidence`; Merit optionally accepts and **requires for human-review readiness**: `observed_at`, `sha`, `environment`, `kind`, `covers` (exact strings copied from the original frozen acceptance/negative cases), `synthetic`. This is strict about exact commit matching and claims, not an attempt to prove that a supplied URL exists.
 
 Approvals are named objects with a role, an explicit decision, timestamp and claimed evidence. Even a structurally present approval has not been cryptographically authenticated.
 

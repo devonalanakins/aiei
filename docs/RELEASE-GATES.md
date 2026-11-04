@@ -1,6 +1,6 @@
 # Release gates and decisions
 
-AIEI can identify missing claims and internally inconsistent evidence; it **cannot authorize** any release.
+Merit can identify missing claims and internally inconsistent evidence; it **cannot authorize** any release.
 
 | Tier | Example | Minimum review |
 | --- | --- | --- |
@@ -11,6 +11,6 @@ AIEI can identify missing claims and internally inconsistent evidence; it **cann
 
 `IMPLEMENTED` means source exists. `VERIFIED` requires specifying a *particular* passing check, exact source and tested environment. `LIVE` requires actual deployment artifact identity and observed real end-user path. `RELEASE_NO_GO` may coexist with high-quality source and green isolated tests.
 
-AIEI validation produces errors, blockers and caveats. Do not map `ready_for_human_review` to an automatic green deployment button. Where a provider or human verification cannot be performed, preserve that uncertainty and continue as `RELEASE_NO_GO`.
+Merit validation produces errors, blockers and caveats. Do not map `ready_for_human_review` to an automatic green deployment button. Where a provider or human verification cannot be performed, preserve that uncertainty and continue as `RELEASE_NO_GO`.
 
 For stacked PRs, assess upstream unmerged dependencies separately. Before merging any PR, inspect whether a merge would trigger an automatic production deployment. This toolkit performs no deployment operations.
