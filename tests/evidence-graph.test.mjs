@@ -92,3 +92,25 @@ test('direct and multi-hop witness cycles cannot substantiate claims',()=>{
 test('dangling witness dependencies reject rather than silently disappear',()=>{
   assert.equal(evaluate(p=>{p.witnesses[0].depends_on=['missing-proof']}).verdict,'UNTRUSTED_SOURCE');
 });
+
+
+test('rejects a packet that substitutes a broader or unrelated claim predicate',()=>{
+  const result=evaluate(p=>{
+    p.predicate='All production programs and security boundaries are formally verified';
+  });
+  assert.equal(result.verdict,'POLICY_BLOCKED');
+  assert.equal(result.release_authorized,false);
+});
+test('rejects a packet that expands the claimed semantic scope or targets',()=>{
+  for(const mutate of [
+    p=>{p.scope.language='TypeScript';},
+    p=>{p.scope.semantics='unbounded-production-semantics';},
+    p=>{p.scope.targets.push('wasm');},
+    p=>{p.scope.targets=['js'];},
+  ]){
+    const result=evaluate(mutate);
+    assert.equal(result.verdict,'POLICY_BLOCKED');
+    assert.equal(result.supported_scope,null);
+    assert.equal(result.release_authorized,false);
+  }
+});
