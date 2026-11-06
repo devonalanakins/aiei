@@ -197,7 +197,7 @@ test('packaging excludes unreviewed files added beside distributable source, doc
 
 test('package never silently includes the experimental read-only GitHub pilot', () => {
   const manifest=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
-  for(const path of ['bin/merit-pilot.mjs','lib/github-pilot.mjs','docs/GITHUB-ADVISORY-PILOT.md']) {
+  for(const path of ['bin/merit-pilot.mjs','lib/github-pilot.mjs','docs/GITHUB-ADVISORY-PILOT.md','lib/policy-signature.mjs']) {
     assert.equal(manifest.files.includes(path),false,'review-only pilot must remain checkout-only: '+path);
   }
   for(const path of ['lib/evidence-graph.mjs','bin/merit-evidence.mjs','docs/CLAIM-EVIDENCE-V1.md']) {
