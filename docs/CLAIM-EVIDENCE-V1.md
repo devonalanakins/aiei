@@ -29,4 +29,23 @@ This module is **experimental source-only** in the review branch, explicitly exc
 
 Before implementing enforcement, independently provision the signing key pin, define an owner-controlled signer identity and key-rotation/revocation procedure, define policy validity/replay windows and digest canonicalization where interoperability is required, and separately verify signed witness execution attestations. Ed25519 on a policy does **not** attest the behavior of JS/Python/Rhen, the authenticity of the submitter, or a human GO decision.
 
+
+## Experimental operator registry lifecycle — checkout only
+
+The separate \`lib/policy-trust.mjs\` module adds an **offline, advisory-only** operator-registry check around the Ed25519 signature preflight. It does **not** establish an independently trusted operator, make the public npm package enforce any policy, or attest runtime witnesses.
+
+An operator-supplied \`merit.policy-trust-registry.v1\` registry contains:
+- \`epoch\`: positive, strictly monotonic integer supplied along with an **independently maintained minimum trusted epoch** (a local caller-controlled value is not anti-rollback security).
+- \`repository\` and \`claim_id\`: exact policy scope.
+- \`keys\`: 1–16 Ed25519 SPKI SHA-256 fingerprints with \`active\`/\`revoked\` status and UTC validity windows.
+- \`policies\`: 1–64 approved policy JSON digests tied to signer fingerprints and UTC validity windows.
+
+All timestamps are strict \`YYYY-MM-DDTHH:mm:ssZ\`, with an inclusive \`valid_from\` and exclusive \`valid_until\`. Signer revocation overrides an otherwise valid signature; changes to the allowed registry and the independent epoch high-water mark are **outside** this module's authority. It rejects duplicate/unknown fields and records, unknown or revoked signers, invalid windows, unsigned/modified policies, incorrect claim or repository, stale epochs, and unapproved or expired policy digests. Rotation is represented by a higher trusted epoch with a new active signer and previously authorized key marked revoked; no keys are generated, persisted, fetched, or published.
+
+\`checkOperatorPolicyRegistry({policyText, signatureBase64, publicKeyPem, trustRegistryText, minimumTrustedEpoch, observedAt})\` reports \`OPERATOR_REGISTRY_MATCH\` only when the caller-supplied registry is structurally consistent and its active approved key, signature, policy hash, repository/claim and UTC windows match. \`observedAt\` is explicitly injectable for deterministic synthetic tests; accepting an arbitrary caller-chosen time in a security decision would allow replay and is **not production safe**. A trusted host clock and persistent authenticated epoch high-water mark are required before enforcement.
+
+\`evaluateWithOperatorRegistry(packet, options)\` gates the existing bounded evidence graph on that check; a failed preflight returns \`POLICY_BLOCKED\`. A supported structural result is **still not authenticated witness execution**. Every result retains \`independently_verified:false\`, \`provenance_authenticated:false\`, \`policy_origin_independently_authenticated:false\`, \`witness_signatures_verified:false\`, \`human_authorization_verified:false\`, and \`release_authorized:false\`. Critically, an attacker who supplies **both their own valid key and a self-serving registry** can also obtain \`OPERATOR_REGISTRY_MATCH\` in this standalone experiment. Treat it as a cryptographic-and-schema rehearsal, not an authorization oracle.
+
+No actual signing keys, persistent trusted key registry, protected storage, key rotation, revocation service, timestamp authority, or production policy decisions were created. This is intentionally source-only and excluded from the published package allowlist. Future operational implementation requires independent key ownership and custody, authenticated registry distribution, monotonic counter persistence resistant to rollback, a trusted clock, independently sourced policy approvals, witness signing and real human release controls.
+
 Policy digestJSON uses JSON.stringify order, not interoperable canonical JSON. A malicious submitter can fabricate unsourced witness metadata. Full trust-chain verification, generalized graph types, human authorization, signed attestations and formal correctness remain outside this initial vertical slice.
