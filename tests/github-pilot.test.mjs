@@ -29,13 +29,16 @@ test('clean snapshot is advisory only, never release authorization',()=>{
 });
 test('forged passing summary does not hide failed observed run',()=>{
   const s=snapshot();s.workflow_runs[0].conclusion='failure';
+  s.summary.workflow_runs.successful=0;s.summary.workflow_runs.other=1;
   const report=advisoryPilotReport(s);
   assert.equal(report.observation,'OBSERVED_NOT_ALL_SUCCESSFUL');noAuthority(report);
 });
 test('queued, skipped, pending and wrong-head runs never count as all passed',()=>{
   for(const change of [
-    s=>{s.workflow_runs[0].status='queued';s.workflow_runs[0].conclusion=null;},
-    s=>{s.check_runs[0].conclusion='skipped';},
+    s=>{s.workflow_runs[0].status='queued';s.workflow_runs[0].conclusion=null;
+      s.summary.workflow_runs.successful=0;s.summary.workflow_runs.pending=1;},
+    s=>{s.check_runs[0].conclusion='skipped';
+      s.summary.check_runs.successful=0;s.summary.check_runs.other=1;},
     s=>{s.commit_status.statuses[0].state='pending';},
     s=>{s.check_runs[0].sha='f'.repeat(40);},
   ]){
@@ -67,6 +70,7 @@ test('zero observed evidence cannot become success despite a passing summary',()
   const s=snapshot();
   s.check_runs=[];s.workflow_runs=[];s.commit_status.statuses=[];
   s.summary.check_runs.observed=0;s.summary.workflow_runs.observed=0;
+  s.summary.check_runs.successful=0;s.summary.workflow_runs.successful=0;
   s.summary.commit_status_count=0;
   assert.equal(advisoryPilotReport(s).observation,'NO_EVIDENCE');
 });
