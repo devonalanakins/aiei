@@ -11,7 +11,7 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check bin/aiei.mjs && node --check lib/index.mjs && node --check lib/validate.mjs && node --check lib/assess.mjs && node --check lib/evidence-graph.mjs && node --check lib/github-evidence.mjs && node --check bin/merit-evidence.mjs",
+    "check": "node --check bin/aiei.mjs && node --check lib/index.mjs && node --check lib/validate.mjs && node --check lib/assess.mjs && node --check lib/evidence-graph.mjs && node --check lib/github-evidence.mjs && node --check bin/merit-evidence.mjs && node --check lib/policy-signature.mjs",
     "verify:examples": "node --test tests/examples.test.mjs"
   },
   "engines": {
