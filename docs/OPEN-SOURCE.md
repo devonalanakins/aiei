@@ -46,6 +46,21 @@ The tarball includes the explicitly reviewed offline and read-only runtime expor
 
 An isolated packaging regression places synthetic extra source, cache, export, CSV and artwork files beside the selected files and verifies that npm excludes them while retaining the required materials. This reduces accidental inclusion; it is not a content scanner and cannot establish publication rights or detect secrets inserted into an already listed file. Review all included content before publishing.
 
+## Source fidelity and rights-review gate
+
+The package rehearsal checks the explicit file manifest, compares the SHA-256 of **each declared distributable file** in the source checkout with the separately installed package, and deliberately tampers with an installed file to prove mismatch detection. These checks cover the bytes transferred from the tested checkout to a disposable npm consumer. They do **not** establish who authored the source, whether the checkout is trusted, whether a registry publisher has permission to distribute it, or whether a released artifact matches this build. No signed source or registry provenance attestation is produced.
+
+The reviewed v0.3.1 candidate currently declares 21 distributable files (plus npm-required `package.json`). Inspection of its seven packaged JavaScript module and CLI source files found only relative internal modules and Node.js built-in imports; the manifest and lockfile declare zero third-party runtime dependencies. The included SVG uses inline shapes/gradients/text with no external image/font imports. The documented Apache-2.0 license and matching package metadata were observed. This is a **source inspection**, not independent authorship, copyright, license-chain, trademark or legal clearance.
+
+Before approving an actual registry release, a qualified human maintainer must separately:
+- Establish the authorship and redistribution rights for the code, documentation, examples and SVG artwork in the final archive, including any AI- or externally-assisted contributions.
+- Determine whether notices, original attribution or third-party licenses must be preserved or added; a missing `NOTICE` file is not proof that no notices are owed.
+- Check the exact final released commit, expected package owner and registry destination, and compare signed/independently anchored release provenance when available.
+- Review all final bundled bytes for secrets, unauthorized confidential content and unexpected inclusions, including edited text inside otherwise allowlisted paths.
+- Re-run package inventory, clean offline consumer installation, explicit tamper test and supported public API smoke checks at the final release commit. Require separate owner approval for registry publication.
+
+**Release status:** Source and package integrity checks can pass while rights, human authorization, trusted artifact origin, and production deployment remain **unverified / NO_GO**. No test in this repository automatically grants publication permission.
+
 ## Maintenance and contributions
 
 Contributors follow [CONTRIBUTING.md](../CONTRIBUTING.md) and [SECURITY.md](../SECURITY.md). Every meaningful change identifies its intended outcome, negative cases, exact tested revision and remaining unverified claims. Dependencies and licensing changes require an explicit compatibility and security review; the present core has zero third-party runtime dependencies.
