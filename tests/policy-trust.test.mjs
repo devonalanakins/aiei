@@ -4,7 +4,7 @@ import {createHash,generateKeyPairSync,sign} from 'node:crypto';
 import {digestJSON} from '../lib/evidence-graph.mjs';
 import {POLICY_SIGNATURE_DOMAIN} from '../lib/policy-signature.mjs';
 import {
-  TRUST_REGISTRY_VERSION,validatePolicyTrustRegistry,checkOperatorPolicyRegistry,
+  TRUST_REGISTRY_VERSION,validatePolicyTrustRegistry,checkOperatorPolicyRegistry,evaluateWithOperatorRegistry,
 } from '../lib/policy-trust.mjs';
 
 const owner=generateKeyPairSync('ed25519');
@@ -188,4 +188,41 @@ test('registry parser limits and no registry input cannot manufacture trust',()=
     const r=check(registry(),envelope(),{trustRegistryText});
     assert.equal(r.status,'BLOCKED');noAuthority(r);
   }
+});
+
+
+test('registry-gated evaluation cannot imply authenticated execution or human release',()=>{
+  const witnesses=['rhen-reference','js','python','independent-oracle'].map((producer,i)=>({
+    id:'w'+i,obligation:'trace',producer,run_id:'run-'+i,attempt:1,
+    revision:source.revision,source_sha256:source.source_sha256,ir_sha256:source.ir_sha256,
+    ...(producer==='js'||producer==='python'?{artifact_sha256:policy.artifacts[producer]}:{}),
+    toolchain:policy.toolchains[producer],observed_at:baseNow,
+    outcome:{stdout:['7'],trap:'overflow'},depends_on:[],
+  }));
+  const packet={
+    schema_version:'merit.evidence.v1',claim_id:policy.claim_id,subject:source,
+    predicate:policy.predicate,scope:structuredClone(policy.scope),
+    assumptions:['synthetic controlled evaluation only'],
+    policy_digest:digestJSON(policy),artifacts:structuredClone(policy.artifacts),
+    witnesses,unsupported:[],open_obligations:[],verification_method:'synthetic test witnesses',
+  };
+  const args={...envelope(),trustRegistryText:JSON.stringify(registry()),
+    minimumTrustedEpoch:10,observedAt:baseNow};
+  const result=evaluateWithOperatorRegistry(packet,args);
+  assert.equal(result.verdict,'SUPPORTED_WITH_SCOPE');
+  assert.equal(result.operator_registry_match,true);
+  assert.equal(result.policy_signature_verified,true);
+  noAuthority(result);
+  const revoked=registry();revoked.keys[0].status='revoked';
+  const blocked=evaluateWithOperatorRegistry(packet,{
+    ...args,trustRegistryText:JSON.stringify(revoked),
+  });
+  assert.equal(blocked.verdict,'POLICY_BLOCKED');
+  assert.equal(blocked.operator_registry_match,false);
+  noAuthority(blocked);
+  const altered=structuredClone(packet);
+  altered.predicate='All of production has been verified';
+  const changed=evaluateWithOperatorRegistry(altered,args);
+  assert.equal(changed.verdict,'POLICY_BLOCKED');
+  noAuthority(changed);
 });
