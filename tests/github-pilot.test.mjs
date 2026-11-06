@@ -11,7 +11,8 @@ function snapshot() {
     workflow_runs:[{id:2,sha:HEAD,status:'completed',conclusion:'success'}],
     commit_status:{combined_state:'success',statuses:[{context:'ci',state:'success'}]},
     summary:{collection_complete:true,all_observed_checks_successful:true,
-      check_runs:{observed:1},workflow_runs:{observed:1},commit_status_count:1},
+      check_runs:{observed:1,successful:1,pending:0,other:0},
+      workflow_runs:{observed:1,successful:1,pending:0,other:0},commit_status_count:1},
   };
 }
 function noAuthority(report) {
@@ -68,4 +69,42 @@ test('zero observed evidence cannot become success despite a passing summary',()
   s.summary.check_runs.observed=0;s.summary.workflow_runs.observed=0;
   s.summary.commit_status_count=0;
   assert.equal(advisoryPilotReport(s).observation,'NO_EVIDENCE');
+});
+
+test('contradictory aggregate success counts are incomplete, never advisory success',()=>{
+  for(const change of [
+    s=>{s.summary.check_runs.successful=0;s.summary.check_runs.other=1;},
+    s=>{s.summary.workflow_runs.successful=0;s.summary.workflow_runs.pending=1;},
+    s=>{s.summary.check_runs.successful=-1;},
+    s=>{s.summary.workflow_runs.other='0';},
+    s=>{delete s.summary.check_runs.pending;},
+  ]){
+    const s=snapshot();
+    change(s);
+    const result=advisoryPilotReport(s);
+    assert.equal(result.observation,'INCOMPLETE');
+    assert.equal(result.release_authorized,false);
+  }
+});
+test('duplicated or invalid check and workflow run IDs are incomplete',()=>{
+  for(const change of [
+    s=>{s.check_runs.push({...s.check_runs[0]});s.summary.check_runs.observed=2;s.summary.check_runs.successful=2;},
+    s=>{s.workflow_runs.push({...s.workflow_runs[0]});s.summary.workflow_runs.observed=2;s.summary.workflow_runs.successful=2;},
+    s=>{s.check_runs[0].id='1';},
+    s=>{s.workflow_runs[0].id=0;},
+  ]){
+    const s=snapshot();
+    change(s);
+    const result=advisoryPilotReport(s);
+    assert.equal(result.observation,'INCOMPLETE');
+    assert.equal(result.release_authorized,false);
+  }
+});
+test('correctly reconciled passing collections remain advisory only',()=>{
+  const s=snapshot();
+  s.check_runs.push({id:3,sha:HEAD,status:'completed',conclusion:'success'});
+  s.summary.check_runs.observed=2;s.summary.check_runs.successful=2;
+  const result=advisoryPilotReport(s);
+  assert.equal(result.observation,'OBSERVED_SUCCESS_ONLY');
+  noAuthority(result);
 });
