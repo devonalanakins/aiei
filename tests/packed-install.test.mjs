@@ -1,12 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
+
+// This checks byte equality between the selected checkout and a disposable installed
+// package; it does not authenticate the author, checkout origin, or npm publisher.
+const digest = path => createHash('sha256').update(readFileSync(path)).digest('hex');
+function mismatchedInstalledFiles(source, installed, files) {
+  return files.filter(path => {
+    const original=join(source,path), copy=join(installed,path);
+    return !existsSync(original) || !existsSync(copy) ||
+      !lstatSync(original).isFile() || !lstatSync(copy).isFile() ||
+      digest(original)!==digest(copy);
+  });
+}
 
 test('a real tarball installs offline and supports documented CLI and library use', () => {
   const sandbox = mkdtempSync(join(tmpdir(), 'aiei-packed-'));
@@ -40,6 +53,19 @@ test('a real tarball installs offline and supports documented CLI and library us
     const archive = join(sandbox, pack[0].filename);
     run('npm', ['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--package-lock=false', archive]);
     const installed = join(consumer, 'node_modules', 'aiei-engineering-integrity');
+    const manifest=JSON.parse(readFileSync(join(ROOT,'package.json'),'utf8'));
+    const packedPaths=pack[0].files.map(file=>file.path);
+    assert.deepEqual(
+      packedPaths.sort(),
+      ['package.json',...manifest.files].sort(),
+      'real archive inventory must match the explicit reviewed source manifest'
+    );
+    const installedManifest=JSON.parse(readFileSync(join(installed,'package.json'),'utf8'));
+    assert.equal(installedManifest.name,manifest.name);
+    assert.equal(installedManifest.version,manifest.version);
+    assert.equal(installedManifest.license,manifest.license);
+    assert.deepEqual(mismatchedInstalledFiles(ROOT,installed,manifest.files),[],
+      'every allowlisted source file must match the isolated installed file byte-for-byte');
     const cli = join(consumer, 'node_modules', '.bin', 'aiei');
     const contract = join(installed, 'examples', 'contract.json');
     const receipt = join(installed, 'examples', 'receipt.json');
@@ -94,6 +120,11 @@ test('a real tarball installs offline and supports documented CLI and library us
       assert.equal(existsSync(join(installed,path)),false,'review-only pilot leaked into package: '+path);
     }
     assert.match(readFileSync(join(installed, '.github/assets/readme-hero.svg'), 'utf8'), /<svg/);
+    // Independent negative challenge: a changed installed file must be caught.
+    // Only mutate the disposable consumer, never the reviewed checkout.
+    const tampered='docs/ROADMAP.md', destination=join(installed,tampered);
+    writeFileSync(destination,Buffer.concat([readFileSync(destination),Buffer.from('\nSYNTHETIC TAMPER TEST\n')]));
+    assert.deepEqual(mismatchedInstalledFiles(ROOT,installed,manifest.files),[tampered]);
   } finally {
     rmSync(sandbox, { recursive: true, force: true });
   }
