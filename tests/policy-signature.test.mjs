@@ -153,3 +153,29 @@ test('replayed signed but outdated policy does not validate a modified packet di
   assert.equal(result.policy_signature_verified,true);
   noRelease(result);
 });
+
+
+test('self-supplied attacker key and pin are NOT proof of independent signer identity',()=>{
+  // A malicious submitter can sign a self-serving policy and also supply its pin.
+  // The verifier cannot know whether the operator obtained that pin independently.
+  const attackerPolicy=structuredClone(policy);
+  attackerPolicy.predicate='All programs were independently proven safe';
+  const attackerKeyPem=impostor.publicKey.export({type:'spki',format:'pem'}).toString();
+  const args={
+    ...signedPolicy(attackerPolicy,impostor.privateKey),
+    publicKeyPem:attackerKeyPem,
+    trustedKeySha256:spkiDigest(impostor.publicKey),
+  };
+  const preflight=verifyPinnedPolicySignature(args);
+  assert.equal(preflight.status,'PINNED_SIGNATURE_VALID');
+  assert.equal(preflight.policy_origin_independently_authenticated,false);
+  const forgedPacket=packet();
+  forgedPacket.predicate=attackerPolicy.predicate;
+  forgedPacket.policy_digest=digestJSON(attackerPolicy);
+  const result=evaluateWithPinnedPolicy(forgedPacket,args);
+  assert.equal(result.verdict,'SUPPORTED_WITH_SCOPE');
+  assert.equal(result.policy_signature_verified,true);
+  assert.equal(result.policy_origin_independently_authenticated,false);
+  assert.equal(result.independently_verified,false);
+  noRelease(result);
+});
