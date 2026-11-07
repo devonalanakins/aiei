@@ -1,0 +1,25 @@
+name: Merit public GitHub read-only advisory pilot
+on:
+  push:
+    branches:
+      - setup/merit-readonly-pilot-20261106
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-api-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout only this Merit review branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run fail-closed advisory regression tests
+        run: node --test tests/github-pilot.test.mjs tests/pilot-cli.test.mjs
+      - name: Inspect public Merit PR metadata with read-only GET
+        run: node bin/merit-pilot.mjs devonalanakins/merit 6
