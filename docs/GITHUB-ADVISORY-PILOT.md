@@ -1,6 +1,6 @@
 # GitHub evidence pilot — advisory only
 
-**Status:** draft setup; this document does not claim live API acceptance, distribution, merge, or production deployment.
+**Status:** experimental draft with real public GitHub API observation verified. [Pilot workflow 42332637420](https://github.com/devonalanakins/merit/actions/runs/42332637420) passed at Merit review head `ec7bcce0521bbf34c3ce2d974bb950a7363b069d`: it reported `OBSERVED_SUCCESS_ONLY` for public PR #6 at observed head `57a7a593c72bd1ea2c0e806b387bfacc9f4b749f`, `collection_complete: true`, and `release_authorized: false`. The associated synthetic CLI exit-code test covered passing, failed, and queued observations (10/10 pilot tests). This does not claim default installation, required GitHub checks, package publication, merge, trusted provenance, or production deployment.
 
 ## Purpose
 
@@ -22,6 +22,8 @@ The second command uses unauthenticated public GitHub REST **GET** requests, no 
 - `INCOMPLETE`: missing, invalid, stale, or truncated required observation; CLI exits nonzero.
 - `NO_EVIDENCE`: complete collection but no checks observed; not sufficient to approve anything.
 - `OBSERVED_NOT_ALL_SUCCESSFUL`: at least one reported observation is pending, failed, skipped, or otherwise non-successful, or conflicts with its summary.
+
+**Process exit status:** `0` is reserved for `OBSERVED_SUCCESS_ONLY` (complete, all-observed-success metadata, still advisory); `1` is returned for **every** other observation including failed, queued, pending, skipped, incomplete and no-evidence; `2` indicates an invalid invocation, unavailable API or another inspection error. Nonzero does not authenticate source or grant release authority.
 - `OBSERVED_SUCCESS_ONLY`: all reported observations are successful and complete for the exact observed head, **not** qualified against required-check policy and not independently reproduced.
 
 All outputs explicitly set provenance authentication, independent test execution, qualified required checks, human approvals, production verification, and release authorization to **false**. A JSON report from this script cannot certify itself. Results are advisory only.

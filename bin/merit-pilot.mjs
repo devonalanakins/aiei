@@ -12,7 +12,9 @@ async function main() {
   if(report.repository?.toLowerCase()!==repository.toLowerCase() || report.pr_number!==Number(prNumber))
     throw Error('Unexpected GitHub PR identity');
   console.log(JSON.stringify(report,null,2));
-  return ['INCOMPLETE','NO_EVIDENCE'].includes(report.observation) ? 1 : 0;
+  // A failed, queued, cancelled or skipped observed check must fail the CLI
+  // even though this program never grants human/production release authority.
+  return report.observation==='OBSERVED_SUCCESS_ONLY' ? 0 : 1;
 }
 main().then(code=>{process.exitCode=code;}).catch(()=>{
   console.error('Merit pilot: read-only GitHub observation failed; no approval was issued.');
