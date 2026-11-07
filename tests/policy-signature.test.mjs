@@ -179,3 +179,14 @@ test('self-supplied attacker key and pin are NOT proof of independent signer ide
   assert.equal(result.independently_verified,false);
   noRelease(result);
 });
+
+
+test('missing null signature options fail closed rather than throwing',()=>{
+  const verification=verifyPinnedPolicySignature(null);
+  assert.equal(verification.status,'BLOCKED');
+  assert.equal(verification.signature_valid,false);
+  noRelease(verification);
+  const evaluated=evaluateWithPinnedPolicy(packet(),null);
+  assert.equal(evaluated.verdict,'POLICY_BLOCKED');
+  assert.equal(evaluated.release_authorized,false);
+});
