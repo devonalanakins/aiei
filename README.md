@@ -1,23 +1,31 @@
-# AIEI — AI Engineering Integrity & Learning
+<p align="center"><img src=".github/assets/readme-hero.svg" alt="Original Merit project banner" width="100%" /></p>
 
-> **Status:** v0.3.1 standalone, source-only engineering core with bounded read-only GitHub API evidence observation. Source is published in the dedicated GitHub repository; live GitHub API acceptance, autonomous security certification, production release integration, and deployment are not implemented.
+# Merit — Engineering Integrity & Evidence
 
-AIEI is a **standalone**, fully open-source, self-hostable-by-default engineering integrity toolkit. It helps engineers retain ownership of AI-assisted work by freezing requirements, recording precise check claims, challenging false evidence, and keeping a human accountable for release decisions.
+> **Repository status · November 6, 2026:** This draft review branch contains a proposed v0.3.1 package candidate. The default branch remains at v0.3.0. Offline tests are not production or release verification.
 
-AIEI is **not** an AI code generator. Its current CLI uses Node.js 22+ and no third-party runtime dependencies. The dedicated AIEI repository is independent of DevonStation, Anevum, Cristy's systems and future client repositories; integrations must use explicit, least-privilege access rather than source-code merging.
+[Architecture](docs/ARCHITECTURE.md) · [Trust boundaries](docs/RELEASE-GATES.md) · [Security](SECURITY.md) · [Open-source distribution](docs/OPEN-SOURCE.md)
+
+> **Status:** Proposed v0.3.1, source-only engineering core with bounded read-only GitHub evidence observation and an offline evidence-graph experiment. No npm registry publication is claimed. Passing local packaging and synthetic tests does not authorize release, security certification, production integration, or deployment.
+
+Merit is a **standalone**, fully open-source, self-hostable-by-default engineering integrity toolkit. It helps engineers retain ownership of AI-assisted work by freezing requirements, recording precise check claims, challenging false evidence, and keeping a human accountable for release decisions.
+
+Merit is **not** an AI code generator. Its current CLI uses Node.js 22+ and no third-party runtime dependencies. The dedicated Merit repository is independent of DevonStation, Anevum, Cristy's systems and future client repositories; integrations must use explicit, least-privilege access rather than source-code merging.
+
+> **Name change:** Merit was previously known as AIEI. Its existing `aiei` CLI command, `bin/aiei.mjs` entrypoint, npm package identity, `AIEI_GITHUB_TOKEN` environment variable, JSON schema identifiers, and historical GitHub references are retained during the compatibility transition. Renaming the repository does not certify its behavior or change existing review gates.
 
 ## What works now
 
 - Validate a bounded, versioned engineering work contract (`schema_version: 1`).
-- Validate a versioned receipt compatible with the **AI Code Integrity Audit receipt v1** fields, with optional AIEI provenance extensions.
+- Validate a versioned receipt compatible with the **AI Code Integrity Audit receipt v1** fields, with optional Merit provenance extensions.
 - Compare a receipt to the original frozen acceptance and negative cases; reject changed requirements, unaccounted check coverage, mismatched commit SHAs, failed/blocked/unrun checks, and missing review gates.
 - Enforce escalating requirements for R2 stateful and R3 high-consequence changes, including a separate named R3 reviewer and recovery evidence.
 - Reject production `LIVE` assertions derived only from synthetic checks; distinguish an internal consistency check from real external validation.
 - Run deterministic built-in Node tests with deliberate false-confidence cases.
 - Provide structured JSON output suitable for future integration with GitHub Actions and an optional read-only DevonStation interface.
-- Inspect a PR's current head SHA, exact-head checks, commit statuses and Actions runs using bounded, read-only GitHub API requests. Safely fetch up to 10 pages / 1,000 records in each collection without following untrusted pagination links; fail closed when records are missing or limits are exceeded. Recheck the PR for changes during inspection. Optionally corroborate supported review-receipt links against exact check names, unique GitHub run IDs, and current GitHub run metadata. This does not prove test assertions, reviewer signatures, approvals or live behavior.
+- Inspect a PR's current head SHA, exact-head checks, commit statuses and Actions runs using bounded, read-only GitHub API requests. Safely fetch up to 10 pages / 1,000 records in each collection without following untrusted pagination links; fail closed when records are missing or limits are exceeded. Recheck the PR for changes during inspection. Optionally corroborate supported review-receipt links against current GitHub run metadata. This does not prove test assertions, reviewer signatures, approvals or live behavior.
 
-AIEI cannot independently reproduce a test, authenticate a human release decision, inspect arbitrary backend source, or observe a production deployment. The new adapter observes only selected GitHub-hosted metadata. It does not issue **GO** approval. Every assessment marks `independently_verified: false` and, at most, `ready_for_human_review: true`.
+Merit cannot independently reproduce a test, authenticate a human release decision, inspect arbitrary backend source, or observe a production deployment. The new adapter observes only selected GitHub-hosted metadata. It does not issue **GO** approval. Every assessment marks `independently_verified: false` and, at most, `ready_for_human_review: true`.
 
 ## Quick start
 
@@ -39,6 +47,10 @@ node bin/aiei.mjs inspect github <owner/repo> <pr-number> --receipt <receipt.jso
 
 The final `assess` command intentionally exits with code **1** because the supplied example is **NO_GO**; this is correct. The example is fictional and makes no claim that an external test was run. Exit codes: `0` structurally valid or successful **observed metadata check**, `1` invalid/blocked/incomplete/pending/failed, `2` unreadable input, unavailable API or invalid invocation. A `0` on `assess` means only *eligible for further human review*, never permission to merge, deploy or take action.
 
+To build and install the proposed local archive without a registry account, follow the [offline package rehearsal](docs/OPEN-SOURCE.md#offline-package-rehearsal). The explicitly allowlisted archive includes the compatible `aiei` CLI, public library API, offline `bin/merit-evidence.mjs` tool, selected documentation, synthetic examples and README artwork. Development tests, lockfile and CI files remain checkout-only. No npm registry publication is claimed.
+
+The offline evidence graph can check scoped packet-policy and witness consistency, but caller-supplied evidence is not authenticated and `release_authorized` remains false. The experimental GitHub pilot, policy-signature, and trust-registry modules are not part of the distributable.
+
 ## Repository layout
 
 | Path | Purpose |
@@ -47,6 +59,8 @@ The final `assess` command intentionally exits with code **1** because the suppl
 | `lib/assess.mjs` | Traceability, risk-tier gates and false-claim defense |
 | `bin/aiei.mjs` | Contract/receipt CLI and optional read-only GitHub PR inspector |
 | `lib/github-evidence.mjs` | Scoped GitHub REST reader with bounded multi-page exact-head observations, missing-check handling and optional receipt-link corroboration |
+| `lib/evidence-graph.mjs` | Offline claim-specific structural evidence evaluator (not authenticated evidence) |
+| `bin/merit-evidence.mjs` | Separate offline evidence-packet CLI; deliberately no automatic release gate |
 | `tests/` | Deterministic negative tests, CLI tests and fictional fixture tests |
 | `examples/` | Fictional R2 contract and explicitly blocked review receipt |
 | `docs/` | Trust model, human learning and release procedure |
@@ -61,7 +75,7 @@ The final `assess` command intentionally exits with code **1** because the suppl
 5. **Prove** — link source SHA, test environment, actual evidence, qualified human approval and observed deployment separately.
 6. **Operate + learn** — preserve ownership, runbooks, incident response, recovery, and maintainer teach-back.
 
-Use the real project's own repository and infrastructure as the source of truth. AIEI's local JSON files are portable **review packets**, not a replacement database for GitHub, Notion, CI or deployment-provider records.
+Use the real project's own repository and infrastructure as the source of truth. Merit's local JSON files are portable **review packets**, not a replacement database for GitHub, Notion, CI or deployment-provider records.
 
 ## Safety
 
@@ -71,8 +85,8 @@ Use the real project's own repository and infrastructure as the source of truth.
 - R3 production changes need documented qualified review, authorization and tested recovery appropriate to the actual risk.
 - The offline contract/receipt commands perform no network I/O. The optional GitHub command makes strictly read-only HTTPS GET requests to `api.github.com`, using a scoped token from `AIEI_GITHUB_TOKEN` if provided. No arbitrary code execution, telemetry, scheduled jobs, CI writes, repository mutation or GitHub permission changes are performed.
 
-See [architecture](docs/ARCHITECTURE.md), [GitHub evidence and token scopes](docs/GITHUB-EVIDENCE.md), [release gates](docs/RELEASE-GATES.md), [learning](docs/LEARNING.md), [security](SECURITY.md), and [development roadmap](docs/ROADMAP.md).
+See [architecture](docs/ARCHITECTURE.md), [GitHub evidence and token scopes](docs/GITHUB-EVIDENCE.md), [claim-specific evidence](docs/CLAIM-EVIDENCE-V1.md), [Open-source distribution](docs/OPEN-SOURCE.md), [release gates](docs/RELEASE-GATES.md), [learning](docs/LEARNING.md), [security](SECURITY.md), and [development roadmap](docs/ROADMAP.md).
 
 ## License
 
-Apache-2.0. This allows independent open-source projects, including projects under stronger copyleft terms, to use AIEI without combining their repositories. License selection is limited to this independent toolkit; it does not relicense any other project.
+Apache-2.0. This allows independent open-source projects, including projects under stronger copyleft terms, to use Merit without combining their repositories. License selection is limited to this independent toolkit; it does not relicense any other project.
