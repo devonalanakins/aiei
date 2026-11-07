@@ -1,6 +1,6 @@
 # GitHub evidence pilot — advisory only
 
-**Status:** draft setup; this document does not claim live API acceptance, distribution, merge, or production deployment.
+**Status:** experimental draft with real public GitHub API observation verified. [Pilot workflow 42332637420](https://github.com/devonalanakins/merit/actions/runs/42332637420) passed at Merit review head `ec7bcce0521bbf34c3ce2d974bb950a7363b069d`: it reported `OBSERVED_SUCCESS_ONLY` for public PR #6 at observed head `57a7a593c72bd1ea2c0e806b387bfacc9f4b749f`, `collection_complete: true`, and `release_authorized: false`. The associated synthetic CLI exit-code test covered passing, failed, and queued observations (10/10 pilot tests). This does not claim default installation, required GitHub checks, package publication, merge, trusted provenance, or production deployment.
 
 ## Purpose
 
