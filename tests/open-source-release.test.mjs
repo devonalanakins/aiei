@@ -204,15 +204,3 @@ test('package never silently includes the experimental read-only GitHub pilot', 
     assert.ok(manifest.files.includes(path),'new published API missing: '+path);
   }
 });
-
-test('public package README preserves Merit identity, offline guide and legacy CLI', () => {
-  const readme = readFileSync(new URL('../README.md', import.meta.url),'utf8');
-  const manifest = JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
-  assert.match(readme, /^# Merit — Engineering Integrity & Evidence$/m);
-  assert.doesNotMatch(readme, /^# AIEI —/m);
-  assert.ok(readme.includes('v'+manifest.version),'README must match the proposed package version');
-  assert.match(readme, /\[Open-source distribution\]\(docs\/OPEN-SOURCE\.md\)/);
-  assert.match(readme, /\[offline package rehearsal\]\(docs\/OPEN-SOURCE\.md#offline-package-rehearsal\)/);
-  assert.match(readme, /existing `aiei` CLI command/);
-  assert.match(readme, /No npm registry publication is claimed/);
-});

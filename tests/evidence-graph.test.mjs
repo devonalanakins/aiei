@@ -7,6 +7,8 @@ const subject={repository:'devonalanakins/rhen',revision:'a'.repeat(40),
   source_sha256:hash('b'),ir_version:'rhen.typed.preview.v0',ir_sha256:hash('c')};
 const expected={stdout:['7'],trap:'overflow'};
 const policy={schema_version:'merit.policy.v1',claim_id:'safeint-prefix',subject,
+  predicate:'SafeInt trace matches independently specified oracle',
+  scope:{language:'Rhen',semantics:'rhen.typed.preview.v0',targets:['reference','js','python']},
   obligations:[{id:'trace',producers:['rhen-reference','js','python','independent-oracle'],expected}],
   artifacts:{js:hash('d'),python:hash('e')},
   toolchains:{'rhen-reference':'node-22',js:'node-22',python:'python-3','independent-oracle':'oracle-v1'}};
@@ -91,4 +93,50 @@ test('direct and multi-hop witness cycles cannot substantiate claims',()=>{
 });
 test('dangling witness dependencies reject rather than silently disappear',()=>{
   assert.equal(evaluate(p=>{p.witnesses[0].depends_on=['missing-proof']}).verdict,'UNTRUSTED_SOURCE');
+});
+
+
+test('rejects a packet that substitutes a broader or unrelated claim predicate',()=>{
+  const result=evaluate(p=>{
+    p.predicate='All production programs and security boundaries are formally verified';
+  });
+  assert.equal(result.verdict,'POLICY_BLOCKED');
+  assert.equal(result.release_authorized,false);
+});
+test('rejects a packet that expands the claimed semantic scope or targets',()=>{
+  for(const mutate of [
+    p=>{p.scope.language='TypeScript';},
+    p=>{p.scope.semantics='unbounded-production-semantics';},
+    p=>{p.scope.targets.push('wasm');},
+    p=>{p.scope.targets=['js'];},
+  ]){
+    const result=evaluate(mutate);
+    assert.equal(result.verdict,'POLICY_BLOCKED');
+    assert.equal(result.supported_scope,null);
+    assert.equal(result.release_authorized,false);
+  }
+});
+
+test('policy rejects missing predicate or scope, including malformed target list',()=>{
+  for(const mutate of [
+    p=>{delete p.predicate;},
+    p=>{p.predicate='';},
+    p=>{delete p.scope;},
+    p=>{p.scope.targets.push('js');},
+    p=>{p.scope.extra='not-allowed';},
+  ]){
+    const changed=structuredClone(policy);
+    mutate(changed);
+    const result=evaluateEvidenceGraph(packet(),changed);
+    assert.equal(result.verdict,'INSUFFICIENT');
+    assert.equal(result.release_authorized,false);
+  }
+});
+test('exact original predicate and ordered targets remain supported structurally',()=>{
+  const result=evaluate();
+  assert.equal(result.verdict,'SUPPORTED_WITH_SCOPE');
+  assert.deepEqual(result.supported_scope,policy.scope);
+  assert.equal(result.provenance_authenticated,false);
+  assert.equal(result.independently_verified,false);
+  assert.equal(result.release_authorized,false);
 });

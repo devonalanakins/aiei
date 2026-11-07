@@ -37,6 +37,7 @@ const pythonToolchain=pythonVersion.stdout.trim();
 const oracle={...expected};
 const policy={
   schema_version:'merit.policy.v1',claim_id:reference.claim_id,subject:reference.subject,
+  predicate:reference.predicate,scope:structuredClone(reference.scope),
   artifacts:reference.artifacts,
   toolchains:{'rhen-reference':nodeToolchain,js:nodeToolchain,
     python:pythonToolchain,'independent-oracle':'fixed-oracle-safeint-v1'},
@@ -88,4 +89,15 @@ test('Merit refuses unsupported semantics and outstanding obligations',()=>{
 test('altering the separately pinned policy blocks the claim',()=>{
   const changed=structuredClone(policy);changed.obligations[0].expected.trap='none';
   assert.equal(evaluateEvidenceGraph(packet,changed).verdict,'POLICY_BLOCKED');
+});
+
+test('Merit blocks broadening the Rhen boundary claim without a policy amendment',()=>{
+  const changed=assess(p=>{p.predicate='All Rhen programs have been formally verified';});
+  assert.equal(changed.verdict,'POLICY_BLOCKED');
+  assert.equal(changed.release_authorized,false);
+});
+test('Merit blocks widening Rhen target coverage while preserving pinned traces',()=>{
+  const changed=assess(p=>{p.scope.targets.push('production-runtime');});
+  assert.equal(changed.verdict,'POLICY_BLOCKED');
+  assert.equal(changed.provenance_authenticated,false);
 });
