@@ -266,3 +266,87 @@ test('pending commit status cannot be laundered by passing check runs',async()=>
   s.commit_status.combined_state='pending';
   assert.equal(compareGitHubReceipt(s,matchingReceipt()).valid,false);
 });
+
+
+test('receipt comparator rejects forged all-green aggregate counts',async()=>{
+  const original=await inspect();
+  assert.equal(compareGitHubReceipt(original,matchingReceipt()).valid,true);
+  for(const mutate of [
+    s=>{s.summary.check_runs.successful=0;s.summary.check_runs.other=1;},
+    s=>{s.summary.check_runs.pending=1;},
+    s=>{s.summary.workflow_runs.observed=0;},
+    s=>{s.summary.workflow_runs.successful=2;},
+    s=>{s.summary.commit_status_count=0;},
+  ]){
+    const s=structuredClone(original);mutate(s);
+    const result=compareGitHubReceipt(s,matchingReceipt());
+    assert.equal(result.valid,false,'inconsistent snapshot must not corroborate a receipt');
+    assert.equal(result.release_authorized,false);
+    assert(result.blockers.some(x=>/observation|snapshot/i.test(x)));
+  }
+});
+
+test('receipt comparator rejects repeated and malformed check identities',async()=>{
+  const original=await inspect();
+  for(const mutate of [
+    s=>{s.check_runs.push({...s.check_runs[0]});s.summary.check_runs.observed=2;s.summary.check_runs.successful=2;},
+    s=>{s.workflow_runs.push({...s.workflow_runs[0]});s.summary.workflow_runs.observed=2;s.summary.workflow_runs.successful=2;},
+    s=>{s.check_runs[0].id='101';},
+    s=>{s.workflow_runs[0].id='202';},
+  ]){
+    const s=structuredClone(original);mutate(s);
+    const result=compareGitHubReceipt(s,matchingReceipt());
+    assert.equal(result.valid,false,'duplicate or nonnumeric run identity must not corroborate a receipt');
+    assert.equal(result.release_authorized,false);
+  }
+});
+
+test('consistent multiple successful checks preserve narrowly scoped corroboration',async()=>{
+  const s=await inspect();
+  s.check_runs.push({...s.check_runs[0],id:102,name:'optional check'});
+  s.summary.check_runs.observed=2;
+  s.summary.check_runs.successful=2;
+  const result=compareGitHubReceipt(s,matchingReceipt());
+  assert.equal(result.valid,true);
+  assert.equal(result.matched.length,2);
+  assert.equal(result.release_authorized,false);
+  assert.equal(result.acceptance_behavior_verified,false);
+});
+
+
+test('comparator refuses a forged successful status lacking a meaningful context',async()=>{
+  const original=await inspect();
+  for(const invalidContext of ['', '   ', null, '\u0000']) {
+    const s=structuredClone(original);
+    s.commit_status.statuses[0].context=invalidContext;
+    const comparison=compareGitHubReceipt(s,matchingReceipt());
+    assert.equal(comparison.valid,false,'status context must identify a real status');
+    assert.equal(comparison.release_authorized,false);
+  }
+});
+
+test('unreferenced successful runs still require a meaningful observed name',async()=>{
+  const original=await inspect();
+  const s=structuredClone(original);
+  s.check_runs.push({...s.check_runs[0],id:102,name:' '});
+  s.summary.check_runs.observed=2;
+  s.summary.check_runs.successful=2;
+  const result=compareGitHubReceipt(s,matchingReceipt());
+  assert.equal(result.valid,false,'an extra nameless check cannot count as a clean observation');
+  assert.equal(result.release_authorized,false);
+});
+
+test('inspector rejects blank run names and status contexts received from the API',async()=>{
+  for(const makeBad of [
+    f=>{f.check_runs.check_runs[0].name=' ';},
+    f=>{f.workflow_runs.workflow_runs[0].name='';},
+    f=>{f.commit_status.statuses[0].context=' ';},
+  ]) {
+    const f=fixture();
+    makeBad(f);
+    await assert.rejects(
+      inspect({fetchImpl:simulatedFetch(f)}),
+      /invalid|unrelated|context|identity/i,
+    );
+  }
+});
