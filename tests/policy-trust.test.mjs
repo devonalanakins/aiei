@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash,generateKeyPairSync,sign} from 'node:crypto';
 import {digestJSON} from '../lib/evidence-graph.mjs';
-import {POLICY_SIGNATURE_DOMAIN} from '../lib/policy-signature.mjs';
+import {POLICY_SIGNATURE_DOMAIN,verifyPinnedPolicySignature} from '../lib/policy-signature.mjs';
 import {
   TRUST_REGISTRY_VERSION,validatePolicyTrustRegistry,checkOperatorPolicyRegistry,evaluateWithOperatorRegistry,
 } from '../lib/policy-trust.mjs';
@@ -225,4 +225,16 @@ test('registry-gated evaluation cannot imply authenticated execution or human re
   const changed=evaluateWithOperatorRegistry(altered,args);
   assert.equal(changed.verdict,'POLICY_BLOCKED');
   noAuthority(changed);
+});
+
+test('null caller inputs fail closed rather than raising uncaught exceptions',()=>{
+  const missingRegistry=checkOperatorPolicyRegistry(null);
+  assert.equal(missingRegistry.status,'BLOCKED');
+  noAuthority(missingRegistry);
+  const missingSignature=verifyPinnedPolicySignature(null);
+  assert.equal(missingSignature.status,'BLOCKED');
+  noAuthority(missingSignature);
+  const result=evaluateWithOperatorRegistry(null,null);
+  assert.equal(result.verdict,'POLICY_BLOCKED');
+  noAuthority(result);
 });
