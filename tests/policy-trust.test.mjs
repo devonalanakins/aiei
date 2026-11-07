@@ -238,3 +238,20 @@ test('null caller inputs fail closed rather than raising uncaught exceptions',()
   assert.equal(result.verdict,'POLICY_BLOCKED');
   noAuthority(result);
 });
+
+test('default host clock accepts a currently valid registry without caller-supplied time',()=>{
+  const now=Date.now();
+  const secondPrecision=ms=>new Date(ms).toISOString().replace(/\.\d{3}Z$/,'Z');
+  const valid_from=secondPrecision(now-60_000);
+  const valid_until=secondPrecision(now+60_000);
+  const current=registry();
+  current.keys=current.keys.map(k=>({...k,valid_from,valid_until}));
+  current.policies=current.policies.map(p=>({...p,valid_from,valid_until}));
+  const result=checkOperatorPolicyRegistry({
+    ...envelope(),
+    trustRegistryText:JSON.stringify(current),
+    minimumTrustedEpoch:10,
+  });
+  assert.equal(result.status,'OPERATOR_REGISTRY_MATCH');
+  noAuthority(result);
+});
