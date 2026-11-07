@@ -20,6 +20,6 @@ jobs:
         with:
           node-version: '22'
       - name: Run fail-closed advisory regression tests
-        run: node --test tests/github-pilot.test.mjs
+        run: node --test tests/github-pilot.test.mjs tests/pilot-cli.test.mjs
       - name: Inspect public Merit PR metadata with read-only GET
         run: node bin/merit-pilot.mjs devonalanakins/merit 6
