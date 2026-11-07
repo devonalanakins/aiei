@@ -312,3 +312,41 @@ test('consistent multiple successful checks preserve narrowly scoped corroborati
   assert.equal(result.release_authorized,false);
   assert.equal(result.acceptance_behavior_verified,false);
 });
+
+
+test('comparator refuses a forged successful status lacking a meaningful context',async()=>{
+  const original=await inspect();
+  for(const invalidContext of ['', '   ', null, '\u0000']) {
+    const s=structuredClone(original);
+    s.commit_status.statuses[0].context=invalidContext;
+    const comparison=compareGitHubReceipt(s,matchingReceipt());
+    assert.equal(comparison.valid,false,'status context must identify a real status');
+    assert.equal(comparison.release_authorized,false);
+  }
+});
+
+test('unreferenced successful runs still require a meaningful observed name',async()=>{
+  const original=await inspect();
+  const s=structuredClone(original);
+  s.check_runs.push({...s.check_runs[0],id:102,name:' '});
+  s.summary.check_runs.observed=2;
+  s.summary.check_runs.successful=2;
+  const result=compareGitHubReceipt(s,matchingReceipt());
+  assert.equal(result.valid,false,'an extra nameless check cannot count as a clean observation');
+  assert.equal(result.release_authorized,false);
+});
+
+test('inspector rejects blank run names and status contexts received from the API',async()=>{
+  for(const makeBad of [
+    f=>{f.check_runs.check_runs[0].name=' ';},
+    f=>{f.workflow_runs.workflow_runs[0].name='';},
+    f=>{f.commit_status.statuses[0].context=' ';},
+  ]) {
+    const f=fixture();
+    makeBad(f);
+    await assert.rejects(
+      inspect({fetchImpl:simulatedFetch(f)}),
+      /invalid|unrelated|context|identity/i,
+    );
+  }
+});
